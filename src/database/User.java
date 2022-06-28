@@ -8,12 +8,22 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class User implements Serializable {
+    @Override
+    public String toString() {
+        return "User{" +
+                "name='" + name + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", mail='" + mail + '\'' +
+                ", pass='" + pass + '\'' +
+                '}';
+    }
+
     public static transient String usersPath = "Users.txt";
     public String name;
-    public int phoneNumber;
+    public String phoneNumber;
     public String mail;
     public String pass;
-    public User(String name, int phoneNumber, String mail, String pass) {
+    public User(String name, String phoneNumber, String mail, String pass) {
         this.name = name;
         this.phoneNumber = phoneNumber;
         this.mail = mail;
@@ -37,7 +47,7 @@ public class User implements Serializable {
         User user = gson.fromJson(userJson , User.class);
         User[] users = getUsers();
         for(User fileUser : users){
-            if(fileUser.phoneNumber == user.phoneNumber){
+            if(fileUser.phoneNumber.equals(user.phoneNumber)){
                 return false;
             }
         }
@@ -56,15 +66,15 @@ public class User implements Serializable {
     public static User[] getUsers(){
         ArrayList<User> result = new ArrayList<>();
         try{
-
             if(!Files.exists(Path.of(usersPath))){
                 Files.createFile(Path.of(usersPath));
                 return result.toArray(new User[0]);
             }
             try(FileInputStream fileInputStream = new FileInputStream(usersPath);
                 ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)){
-                if(objectInputStream.readObject() instanceof User[]){
-                    return  (User[]) objectInputStream.readObject();
+                Object obj;
+                if( (obj = objectInputStream.readObject() ) instanceof User[]){
+                    return  (User[]) obj;
                 }
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();

@@ -22,14 +22,17 @@ public class RegisterHandler implements  Runnable{
                 ){
                     StringBuilder command = new StringBuilder();
                     int c = dataInputStream.read();
-                    while (c != -1 && c != 10) {
+                    while (c != -1 && c != 0) {
                         command.append((char)c);
                         c = dataInputStream.read();
                     }
                     boolean result = User.addUser(command.toString());
+
                     if(result){
+                        System.out.println("registered");
                         dataOutputStream.writeBytes("registered");
                     }else{
+                        System.out.println("unregistered");
                         dataOutputStream.writeBytes("unregistered");
                     }
                 }
