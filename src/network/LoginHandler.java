@@ -28,7 +28,7 @@ public class LoginHandler implements Runnable{
                         command.append((char)c);
                         c = dataInputStream.read();
                     }
-                    String[] info = command.toString().split(" ");
+                    String[] info = command.toString().split("-");
 
                     User result = User.findUser(info[0] , info[1]);
                     if(result == null){
@@ -39,10 +39,11 @@ public class LoginHandler implements Runnable{
                         System.out.println("user Found");
                         //
                         UserThread userThread = new UserThread(result);
-                        new Thread(userThread);
+                        new Thread(userThread).start();
                         int port = userThread.getPort();
+                        System.out.println("port is " + port);
                         String json = gson.toJson(result);
-                        dataOutputStream.write(json.getBytes("UTF-8"));
+                        dataOutputStream.write((port + "-" + json).getBytes("UTF-8"));
                     }
                 }
             }
