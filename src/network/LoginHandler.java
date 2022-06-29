@@ -1,5 +1,6 @@
 package network;
 
+import com.google.gson.Gson;
 import database.User;
 
 import java.io.DataInputStream;
@@ -7,18 +8,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
-public class RegisterHandler implements  Runnable{
-    final int port = 1717;
-    int dynPort;
-
-    public int getDynPort() {
-        return dynPort;
-    }
-
+public class LoginHandler implements Runnable{
+    Gson gson = new Gson();
+    final int port = 4242;
     @Override
     public void run() {
         ServerSocket serverSocket;
@@ -31,24 +24,30 @@ public class RegisterHandler implements  Runnable{
                 ){
                     StringBuilder command = new StringBuilder();
                     int c = dataInputStream.read();
-                    List<Byte> bytes = new ArrayList<>();
                     while (c != -1 && c != 0) {
-                        command.append((char) c);
-                        bytes.add((byte)c);
+                        command.append((char)c);
                         c = dataInputStream.read();
                     }
-                    String finalString = new String(command.toString().getBytes(StandardCharsets.ISO_8859_1));
-                    boolean result = User.addUser(finalString);
-                    if(result){
-                        dataOutputStream.writeBytes("registered");
+                    String[] info = command.toString().split(" ");
+
+                    User result = User.findUser(info[0] , info[1]);
+                    if(result == null){
+
+                        dataOutputStream.writeBytes("failed");
                     }else{
-                        dataOutputStream.writeBytes("unregistered");
+                        //
+                        System.out.println("user Found");
+                        //
+                        UserThread userThread = new UserThread(result);
+                        new Thread(userThread);
+                        int port = userThread.getPort();
+                        String json = gson.toJson(result);
+                        dataOutputStream.write(json.getBytes("UTF-8"));
                     }
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 }

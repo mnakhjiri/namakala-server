@@ -62,7 +62,15 @@ public class User implements Serializable {
         }
         return true;
     }
-
+    public static User findUser(String number , String pass){
+        User[] users = getUsers();
+        for(User user : users){
+            if(number.equals(user.phoneNumber) && pass.equals(user.pass)){
+                return user;
+            }
+        }
+        return null;
+    }
     public static User[] getUsers(){
         ArrayList<User> result = new ArrayList<>();
         try{
