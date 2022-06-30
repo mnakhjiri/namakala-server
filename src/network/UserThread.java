@@ -7,6 +7,7 @@ import database.User;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +39,49 @@ public class UserThread implements Runnable{
                     String finalString = new String(command.toString().getBytes(StandardCharsets.ISO_8859_1));
                     String[] commands = finalString.split("-");
                     System.out.println(finalString);
+                    if(commands[0].equals("fav")){
+                        if(commands[1].equals("set")){
+                            synchronized (Product.class){
+                                Product product = Product.findProduct(commands[2]);
+                                Product.deleteProduct(product);
+                                ArrayList<String> favusers =  new ArrayList<>(Arrays.asList(product.favUsers));
+                                favusers.add(user.phoneNumber);
+                                product.favUsers = favusers.toArray(new String[0]);
+                                System.out.println(product.seller);
+                                Product.addProduct(product);
+                            }
+                        }else if(commands[1].equals("reset")){
+                            synchronized (Product.class){
+                                Product product = Product.findProduct(commands[2]);
+                                Product.deleteProduct(product);
+                                ArrayList<String> favusers =  new ArrayList<>(Arrays.asList(product.favUsers));
+                                favusers.remove(user.phoneNumber);
+                                product.favUsers = favusers.toArray(new String[0]);
+                                System.out.println(product.seller);
+                                Product.addProduct(product);
+                            }
+                        }
+                    }
+                    if(commands[0].equals("favProduct")){
+                        Product[] products =Product.getProducts();
+                        ArrayList<Product> favProducts = new ArrayList<>();
+                        System.out.println();
+                        for(Product product : products){
+                            if(Arrays.asList(product.favUsers).contains(commands[1])){
+                                favProducts.add(product);
+                            }
+                        }
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for(Product product : favProducts){
+                            stringBuilder.append(gson.toJson(product)).append(",,");
+                        }
+                        String result = stringBuilder.toString();
+                        if(result.equals("")){
+                            dataOutputStream.write(result.getBytes("UTF-8"));
+                        }else{
+                            dataOutputStream.write(result.substring(0,result.length()-2).getBytes("UTF-8"));
+                        }
+                    }
                     if(commands[0].equals("edit")){
                         //
                         System.out.println("edit mode");
@@ -109,6 +153,7 @@ public class UserThread implements Runnable{
                         }else {
                             changedProduct.name = (String) map.get("name");
                         }
+                        changedProduct.favUsers = product.favUsers;
                         changedProduct.seller = product.seller;
                         if(((ArrayList<String>) map.get("images")).get(0).equals("")){
                             changedProduct.images = product.images;
