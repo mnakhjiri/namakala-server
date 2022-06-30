@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
+import java.util.*;
 
 public class UserThread implements Runnable{
     Gson gson = new Gson();
@@ -98,6 +98,57 @@ public class UserThread implements Runnable{
                         Product product = gson.fromJson(commands[1] , Product.class);
                         product.seller = user;
                         Product.addProduct(product);
+                    }
+                    if(commands[0].equals("editProduct")){
+                        String productName = commands[1];
+                        Product product =  Product.findProduct(productName);
+                        Map map = gson.fromJson(commands[2] , Map.class);
+                        Product changedProduct = new Product();
+                        if(map.get("name").equals("")){
+                            changedProduct.name = product.name;
+                        }else {
+                            changedProduct.name = (String) map.get("name");
+                        }
+                        changedProduct.seller = product.seller;
+                        if(((ArrayList<String>) map.get("images")).get(0).equals("")){
+                            changedProduct.images = product.images;
+                        }else {
+                            changedProduct.images = ((ArrayList<String>) map.get("images")).toArray(new String[0]);
+                        }
+                        if(map.get("price").equals("")){
+                            changedProduct.price = product.price;
+                        }else {
+                            changedProduct.price = (String) map.get("price");
+                        }
+                        if( ((ArrayList<String>)map.get("categories")).get(0).equals("") ){
+                            changedProduct.categories = product.categories;
+                        }else {
+                            changedProduct.categories = ((ArrayList<String>) map.get("categories")).toArray(new String[0]);
+                        }
+                        if(((Map<String, ArrayList<String>>) map.get("properties")).containsKey("")){
+                            changedProduct.properties = product.properties;
+                        }else {
+                            Map<String , ArrayList<String>> jsonMap =((Map<String, ArrayList<String>>) map.get("properties"));
+                            Map<String , String[]> resultMap = new HashMap<>();
+                            for(String key : jsonMap.keySet()){
+                                resultMap.put(key , jsonMap.get(key).toArray(new String[0]));
+                            }
+                            changedProduct.properties = resultMap;
+                        }
+                        changedProduct.rating = product.rating;
+                        changedProduct.ratingCount = product.ratingCount;
+                        if(((ArrayList<String>) map.get("info")).get(0).equals("")){
+                            changedProduct.info = product.info;
+                        }else {
+                            changedProduct.info = ((ArrayList<String>) map.get("info")).toArray(new String[0]);
+                        }
+                        if(map.get("count").equals("")){
+                            changedProduct.count = product.count;
+                        }else {
+                            changedProduct.count = (String) map.get("count");
+                        }
+                        Product.deleteProduct(product);
+                        Product.addProduct(changedProduct);
                     }
                     if(commands[0].equals("exit")){
                         System.out.println("exiting");

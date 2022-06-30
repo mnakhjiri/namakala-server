@@ -14,7 +14,7 @@ public class Product implements Serializable {
     public String[] images;
     public String price;
     public String[] categories;
-    Map<String , String[]> properties;
+    public Map<String , String[]> properties;
     public String rating = "0";
     public int ratingCount = 0;
     public String[] info;
