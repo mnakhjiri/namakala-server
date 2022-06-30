@@ -182,6 +182,7 @@ public class UserThread implements Runnable{
                         }
                     }
                     if(commands[0].equals("setCart")){
+                        System.out.println("inside setCart");
                         Product.addToCart(commands[1] , commands[2] , commands[3]);
                     }
                     // 0 => getCart
@@ -197,12 +198,12 @@ public class UserThread implements Runnable{
                     }
                     if(commands[0].equals("getUserCart")){
                         Product[] products = Product.getProducts();
-                        Map<Product , String> currentCart = new HashMap<>();
-                        Map<Product , String> maxCart = new HashMap<>();
+                        Map<String , String> currentCart = new HashMap<>();
+                        Map<String , String> maxCart = new HashMap<>();
                         for(Product product : products){
                             if(product.carts.containsKey(user.phoneNumber)){
-                                currentCart.put(product , product.carts.get(user.phoneNumber));
-                                maxCart.put(product , product.count);
+                                currentCart.put(gson.toJson(product) , product.carts.get(user.phoneNumber));
+                                maxCart.put(gson.toJson(product) , product.count);
                             }
                         }
                         dataOutputStream.write((gson.toJson(currentCart) +"-"+ gson.toJson(maxCart) ).getBytes("UTF-8"));
