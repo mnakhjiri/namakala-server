@@ -20,8 +20,9 @@ public class Product implements Serializable {
     public String[] info;
     public String count;
     public String[] favUsers = new String[0];
+    public Map<String , String> carts = new HashMap<>();
 
-    public Product(String name, User seller, String[] images, String price, String[] categories, Map<String, String[]> properties, String rating, int ratingCount, String[] info, String count, String[] favUsers) {
+    public Product(String name, User seller, String[] images, String price, String[] categories, Map<String, String[]> properties, String rating, int ratingCount, String[] info, String count, String[] favUsers, Map<String, String> carts) {
         this.name = name;
         this.seller = seller;
         this.images = images;
@@ -33,8 +34,8 @@ public class Product implements Serializable {
         this.info = info;
         this.count = count;
         this.favUsers = favUsers;
+        this.carts = carts;
     }
-
 
     @Override
     public String toString() {
@@ -50,6 +51,7 @@ public class Product implements Serializable {
                 ", info=" + Arrays.toString(info) +
                 ", count='" + count + '\'' +
                 ", favUsers=" + Arrays.toString(favUsers) +
+                ", carts=" + carts +
                 '}';
     }
 
@@ -61,12 +63,12 @@ public class Product implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return ratingCount == product.ratingCount && Objects.equals(name, product.name) && Objects.equals(seller, product.seller) && Arrays.equals(images, product.images) && Objects.equals(price, product.price) && Arrays.equals(categories, product.categories) && Objects.equals(properties, product.properties) && Objects.equals(rating, product.rating) && Arrays.equals(info, product.info) && Objects.equals(count, product.count) && Arrays.equals(favUsers, product.favUsers);
+        return ratingCount == product.ratingCount && Objects.equals(name, product.name) && Objects.equals(seller, product.seller) && Arrays.equals(images, product.images) && Objects.equals(price, product.price) && Arrays.equals(categories, product.categories) && Objects.equals(properties, product.properties) && Objects.equals(rating, product.rating) && Arrays.equals(info, product.info) && Objects.equals(count, product.count) && Arrays.equals(favUsers, product.favUsers) && Objects.equals(carts, product.carts);
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(name, seller, price, properties, rating, ratingCount, count);
+        int result = Objects.hash(name, seller, price, properties, rating, ratingCount, count, carts);
         result = 31 * result + Arrays.hashCode(images);
         result = 31 * result + Arrays.hashCode(categories);
         result = 31 * result + Arrays.hashCode(info);
@@ -125,6 +127,22 @@ public class Product implements Serializable {
             e.printStackTrace();
         }
         return true;
+    }
+    public static synchronized void   addToCart(String phoneNumber , String productName , String count){
+        Product[] products = getProducts();
+        for(int i = 0 ; i < products.length ; i++){
+            if(products[i].name.equals(productName)){
+                products[i].carts.put(phoneNumber , count);
+            }
+        }
+        try(FileOutputStream fileOutputStream = new FileOutputStream(productsPath);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)
+        ){
+            objectOutputStream.writeObject(products);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
     public static synchronized Product findProduct(String name){
         Product[] products = getProducts();

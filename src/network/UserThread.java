@@ -143,6 +143,70 @@ public class UserThread implements Runnable{
                         product.seller = user;
                         Product.addProduct(product);
                     }
+
+                    if(commands[0].equals("getCount")){
+                        Product[] products = Product.getProducts();
+                        String result = "0";
+                        for(Product product : products){
+                            if(product.name.equals(commands[1])){
+                                result = product.count;
+                            }
+                        }
+                        dataOutputStream.write(result.getBytes("UTF-8"));
+                    }
+                    if(commands[0].equals("increaseCount")){
+                        synchronized (Product.class){
+                            String productName = commands[1];
+                            Product product =  Product.findProduct(productName);
+                            Product.deleteProduct(product);
+                            product.count = String.valueOf(Integer.parseInt(product.count) + 1);
+                            Product.addProduct(product);
+                        }
+                    }
+                    if(commands[0].equals("reduceCount")){
+                        synchronized (Product.class){
+                            String productName = commands[1];
+                            Product product =  Product.findProduct(productName);
+                            Product.deleteProduct(product);
+                            product.count = String.valueOf(Integer.parseInt(product.count) - 1);
+                            Product.addProduct(product);
+                        }
+                    }
+                    if(commands[0].equals("setCount")){
+                        synchronized (Product.class){
+                            String productName = commands[1];
+                            Product product =  Product.findProduct(productName);
+                            Product.deleteProduct(product);
+                            product.count = commands[2];
+                            Product.addProduct(product);
+                        }
+                    }
+                    if(commands[0].equals("setCart")){
+                        Product.addToCart(commands[1] , commands[2] , commands[3]);
+                    }
+                    // 0 => getCart
+                    // 1=> productname
+                    // 2 => userphone
+                    if(commands[0].equals("getCart")){
+                        Product[] products = Product.getProducts();
+                        for(Product product : products){
+                            if(product.name.equals(commands[1])){
+                                dataOutputStream.write(product.carts.getOrDefault(commands[2], "false").getBytes("UTF-8"));
+                            }
+                        }
+                    }
+                    if(commands[0].equals("getUserCart")){
+                        Product[] products = Product.getProducts();
+                        Map<Product , String> currentCart = new HashMap<>();
+                        Map<Product , String> maxCart = new HashMap<>();
+                        for(Product product : products){
+                            if(product.carts.containsKey(user.phoneNumber)){
+                                currentCart.put(product , product.carts.get(user.phoneNumber));
+                                maxCart.put(product , product.count);
+                            }
+                        }
+                        dataOutputStream.write((gson.toJson(currentCart) +"-"+ gson.toJson(maxCart) ).getBytes("UTF-8"));
+                    }
                     if(commands[0].equals("editProduct")){
                         String productName = commands[1];
                         Product product =  Product.findProduct(productName);
@@ -180,6 +244,7 @@ public class UserThread implements Runnable{
                             }
                             changedProduct.properties = resultMap;
                         }
+                        changedProduct.carts = product.carts;
                         changedProduct.rating = product.rating;
                         changedProduct.ratingCount = product.ratingCount;
                         if(((ArrayList<String>) map.get("info")).get(0).equals("")){
