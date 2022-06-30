@@ -1,6 +1,7 @@
 package network;
 
 import com.google.gson.Gson;
+import database.Product;
 import database.User;
 
 import java.io.DataInputStream;
@@ -76,6 +77,27 @@ public class UserThread implements Runnable{
                         User.addUser(gson.toJson(changedUser));
                         user = changedUser;
                         dataOutputStream.write(gson.toJson(user).getBytes("UTF-8"));
+                    }
+                    if(commands[0].equals("userProduct")){
+                        Product[] products = Product.findProductByUser(user);
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for(Product product : products){
+                            stringBuilder.append(gson.toJson(product) + ",,");
+                        }
+                        String result = stringBuilder.toString();
+                        if(result.equals("")){
+                            dataOutputStream.write(result.getBytes("UTF-8"));
+                        }else{
+                            dataOutputStream.write(result.substring(0,result.length()-2).getBytes("UTF-8"));
+                        }
+                    }
+                    if (commands[0].equals("deleteProduct")){
+                        Product.deleteProduct(Product.findProduct(commands[1]));
+                    }
+                    if(commands[0].equals("addProduct")){
+                        Product product = gson.fromJson(commands[1] , Product.class);
+                        product.seller = user;
+                        Product.addProduct(product);
                     }
                     if(commands[0].equals("exit")){
                         System.out.println("exiting");
