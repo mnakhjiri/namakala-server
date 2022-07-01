@@ -1,6 +1,7 @@
 package network;
 
 import com.google.gson.Gson;
+import database.Order;
 import database.Product;
 import database.User;
 
@@ -181,9 +182,23 @@ public class UserThread implements Runnable{
                             Product.addProduct(product);
                         }
                     }
+
+                    if(commands[0].equals("addOrder")){
+                        Order.addOrder(commands[1]);
+                    }
                     if(commands[0].equals("setCart")){
                         System.out.println("inside setCart");
                         Product.addToCart(commands[1] , commands[2] , commands[3]);
+                    }
+                    if(commands[0].equals("getOrders")){
+                        Order[] orders = Order.getOrders();
+                        ArrayList<String> orderArrayList = new ArrayList<>();
+                        for(Order order : orders){
+                            if(order.userPhone.equals(user.phoneNumber)){
+                                orderArrayList.add(gson.toJson(order));
+                            }
+                        }
+                        dataOutputStream.write(gson.toJson(orderArrayList).getBytes("UTF-8"));
                     }
                     // 0 => getCart
                     // 1=> productname
